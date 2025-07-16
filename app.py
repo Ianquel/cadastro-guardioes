@@ -6,20 +6,19 @@ from email.message import EmailMessage
 from datetime import datetime
 
 # ---------- CONFIGURAÇÕES ----------
-EMAIL_DESTINO = "ianquelalves@gmail.com"         # <- Troque pelo seu
+EMAIL_DESTINO = "ianquelalves@gmail.com"
 EMAIL_REMETENTE = "ianquelalves@gmail.com"
-SENHA_REMETENTE = "fbqx ikou jwdg qepn"   # <- Usar senha de app do Gmail
+SENHA_REMETENTE = "fbqx ikou jwdg qepn"  # Gerada no Gmail
 
 # Criar diretórios
 os.makedirs("fotos", exist_ok=True)
 os.makedirs("declaracoes", exist_ok=True)
 
 # ---------- INTERFACE ----------
-# Mostrar logo local (300px) centralizada com markdown + HTML
 st.markdown(
     """
     <div style="text-align: center;">
-        <img src="logo_guardioes2.png" width="300">
+        <img src="logo_guardioes.png" width="300">
         <h1>Cadastro de Atletas - Guardiões da Estácio</h1>
     </div>
     """,
@@ -31,13 +30,11 @@ with st.form("formulario_cadastro"):
     rg = st.text_input("RG")
     orgao_emissor = st.text_input("Órgão Emissor")
     cpf = st.text_input("CPF")
-
     data_nascimento = st.date_input(
         "Data de Nascimento",
         min_value=datetime(1980, 1, 1),
         max_value=datetime(2025, 12, 31)
     )
-
     foto = st.file_uploader("Foto (JPG)", type=["jpg", "jpeg"])
     declaracao = st.file_uploader("Declaração (PDF)", type=["pdf"])
 
@@ -64,28 +61,3 @@ with st.form("formulario_cadastro"):
                 df.to_csv(csv_path, index=False)
 
             foto_path = os.path.join("fotos", f"{cpf}_{foto.name}")
-            declaracao_path = os.path.join("declaracoes", f"{cpf}_{declaracao.name}")
-
-            with open(foto_path, "wb") as f:
-                f.write(foto.read())
-            with open(declaracao_path, "wb") as f:
-                f.write(declaracao.read())
-
-            # Enviar e-mail com CSV
-            msg = EmailMessage()
-            msg['Subject'] = f"Novo Cadastro: {nome}"
-            msg['From'] = EMAIL_REMETENTE
-            msg['To'] = EMAIL_DESTINO
-            msg.set_content(f"Novo atleta cadastrado:\n\nNome: {nome}\nCPF: {cpf}")
-
-            with open(csv_path, "rb") as f:
-                msg.add_attachment(f.read(), maintype="application", subtype="csv", filename="cadastros.csv")
-
-            try:
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-                    smtp.login(EMAIL_REMETENTE, SENHA_REMETENTE)
-                    smtp.send_message(msg)
-                st.success("✅ Cadastro enviado com sucesso!")
-            except Exception as e:
-                st.warning("Cadastro salvo, mas erro ao enviar e-mail.")
-                st.text(str(e))

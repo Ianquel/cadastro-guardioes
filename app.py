@@ -6,9 +6,9 @@ from email.message import EmailMessage
 from datetime import datetime
 
 # ---------- CONFIGURAÇÕES ----------
-EMAIL_DESTINO = "seu_email@gmail.com"         # <- Troque pelo seu
-EMAIL_REMETENTE = "seu_email@gmail.com"
-SENHA_REMETENTE = "sua_senha_de_aplicativo"   # <- Usar senha de app do Gmail
+EMAIL_DESTINO = "ianquelalves@gmail.com"         # <- Troque pelo seu
+EMAIL_REMETENTE = "ianquelalves@gmail.com"
+SENHA_REMETENTE = "fbqx ikou jwdg qepn"   # <- Usar senha de app do Gmail
 
 # Criar diretórios
 os.makedirs("fotos", exist_ok=True)

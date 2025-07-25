@@ -48,4 +48,57 @@ with st.form("formulario_cadastro"):
             # Salvar dados no CSV
             dados = {
                 "Data": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-                "Nom
+                "Nome": [nome],
+                "E-mail": [email_atleta],
+                "RG": [rg],
+                "Órgão Emissor": [orgao_emissor],
+                "CPF": [cpf],
+                "Data de Nascimento": [data_nascimento.strftime("%d/%m/%Y")],
+            }
+
+            df = pd.DataFrame(dados)
+            csv_path = "cadastros.csv"
+            if os.path.exists(csv_path):
+                df.to_csv(csv_path, mode="a", header=False, index=False)
+            else:
+                df.to_csv(csv_path, index=False)
+
+            # Salvar arquivos
+            foto_path = os.path.join("fotos", f"{cpf}_{foto.name}")
+            declaracao_path = os.path.join("declaracoes", f"{cpf}_{declaracao.name}")
+            with open(foto_path, "wb") as f:
+                f.write(foto.read())
+            with open(declaracao_path, "wb") as f:
+                f.write(declaracao.read())
+
+            # ---------- ENVIO DE EMAIL ----------
+            msg = EmailMessage()
+            msg['Subject'] = f"Novo Cadastro: {nome}"
+            msg['From'] = EMAIL_REMETENTE
+            msg['To'] = EMAIL_DESTINO
+            msg.set_content(f"""
+Novo atleta cadastrado:
+
+Nome: {nome}
+E-mail: {email_atleta}
+CPF: {cpf}
+RG: {rg}
+Data de Nascimento: {data_nascimento.strftime('%d/%m/%Y')}
+""")
+
+            # Anexos
+            with open(csv_path, "rb") as f:
+                msg.add_attachment(f.read(), maintype="application", subtype="csv", filename="cadastros.csv")
+            with open(foto_path, "rb") as f:
+                msg.add_attachment(f.read(), maintype="image", subtype="jpeg", filename=os.path.basename(foto_path))
+            with open(declaracao_path, "rb") as f:
+                msg.add_attachment(f.read(), maintype="application", subtype="pdf", filename=os.path.basename(declaracao_path))
+
+            try:
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                    smtp.login(EMAIL_REMETENTE, SENHA_REMETENTE)
+                    smtp.send_message(msg)
+                st.success("✅ Cadastro e documentos enviados com sucesso!")
+            except Exception as e:
+                st.warning("Cadastro salvo, mas erro ao enviar e-mail com anexos.")
+                st.text(str(e))
